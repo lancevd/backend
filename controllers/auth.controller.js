@@ -53,3 +53,42 @@ export const register = async (req, res) => {
     res.status(500).json({ message: `An error occured: ${error}` });
   }
 };
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // find the user in database
+    const user = await User.findOne({ email: email.toLowerCase() });
+    // If there is user, check if password matches
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!user || !passwordMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    generateToken(user._id, res);
+
+    return res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: `An error occured: ${error}` });
+  }
+};
