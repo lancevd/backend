@@ -1,7 +1,55 @@
-export const register = async (req, res) => {
-  const { email, firstName, lastName, password } = req.body;
+import generateToken from "../lib/generateToken.js";
+import User from "../models/user.js";
+import bcrypt from "bcryptjs";
 
-  if (!email || !firstName || !lastName || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+export const register = async (req, res) => {
+  const payload = req.body;
+
+  try {
+    if (
+      !payload.email ||
+      !payload.firstName ||
+      !payload.lastName ||
+      !payload.password
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const email = payload.email.toLowerCase();
+    const userExist = await User.findOne({ email });
+
+    if (userExist) {
+      res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    //   encrypt password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(payload.password, salt);
+
+    const newUser = new User({
+      ...payload,
+      email,
+      password: hashedPassword,
+    });
+
+    if (newUser) {
+      generateToken(newUser._id, res);
+      await newUser.save();
+
+      return res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        user: {
+          ...newUser._doc,
+          password: undefined,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: `An error occured: ${error}` });
   }
 };
