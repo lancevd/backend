@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "https://cdn-icons-png.flaticon.com/512/6596/6596121.png",
     },
+
+    status: {
+      type: String,
+      default: "Free User",
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     verificationToken: String,
