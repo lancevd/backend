@@ -10,14 +10,15 @@ const app = express();
 
 const PORT = process.env.PORT || 5100;
 
-app.use(express.json());
-app.use(cookieParser());
+
 app.use(
   cors({
     origin: process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://voxance.vercel.app",
     credentials: true,
   })
 );
+app.use(cookieParser());
+app.use(express.json());
 
 // Define your routes here
 app.get("/", (req, res) => {
