@@ -20,11 +20,38 @@ export async function createDiscussion (req, res) {
         return res.status(201).json({
             success: true,
             message: "New discussion created!",
-            data: payload
+            data: newDiscussion
         })
         
     } catch (error) {
-        
+        return res.status(500).json({
+            success: false,
+            message: `An error occured: ${error}`
+        })
     }
+}
 
+export async function getSingleDiscussion(req, res) {
+    const {id} = req.params;
+
+    try {
+        const discussion = await Discussion.findById(id);
+        if(!discussion || id.length < 24) {
+            return res.status(404).json({
+                success: false,
+                message: "Discussion not found!"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Discussion fetched successfully",
+            item: discussion
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: `An error occured. ${error.message}`,
+        })
+    }
 }
